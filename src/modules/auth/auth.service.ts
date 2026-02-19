@@ -1,35 +1,37 @@
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
-import { EntraIdService } from '../../integrations/entra-id';
+import { Inject, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import type { AuthCallbackParams, AuthLoginUrlResult, AuthStrategy, AuthTokenResult } from './auth.interface';
+import { AUTH_STRATEGIES } from './auth.constant';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly entraId: EntraIdService) {}
+    constructor(
+        @Inject(AUTH_STRATEGIES) private readonly strategies: AuthStrategy[],
+    ) {}
 
-    async getEntraLoginUrl(): Promise<{ url: string; state: string; codeVerifier: string }> {
-        if (!this.entraId.isAvailable()) {
-            throw new ServiceUnavailableException(
-                'Microsoft Entra ID login is not configured. Set ENTRA_* env vars.',
-            );
-        }
-        return this.entraId.getLoginUrl();
+    /** Get list of registered strategy ids (for discovery / docs) */
+    getStrategyIds(): string[] {
+        return this.strategies.map((s) => s.getStrategyId());
     }
 
-    async redeemEntraCode(
-        code: string,
-        state: string,
-        codeVerifier?: string,
-    ): Promise<{ accessToken: string; refreshToken?: string; expiresOn: Date; tokenType: string }> {
-        if (!this.entraId.isAvailable()) {
+    /** Get a strategy by id; throws if not found or not available */
+    private getStrategy(strategyId: string): AuthStrategy {
+        const strategy = this.strategies.find((s) => s.getStrategyId() === strategyId);
+        if (!strategy) {
+            throw new NotFoundException(`Unknown auth strategy: ${strategyId}`);
+        }
+        if (!strategy.isAvailable()) {
             throw new ServiceUnavailableException(
-                'Microsoft Entra ID login is not configured.',
+                `Auth strategy "${strategyId}" is not configured. Set required env vars for this provider.`,
             );
         }
-        const result = await this.entraId.redeemCode(code, state, codeVerifier);
-        return {
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-            expiresOn: result.expiresOn,
-            tokenType: 'Bearer',
-        };
+        return strategy;
+    }
+
+    async getLoginUrl(strategyId: string): Promise<AuthLoginUrlResult> {
+        return this.getStrategy(strategyId).getLoginUrl();
+    }
+
+    async redeemCode(strategyId: string, params: AuthCallbackParams): Promise<AuthTokenResult> {
+        return this.getStrategy(strategyId).redeemCode(params);
     }
 }

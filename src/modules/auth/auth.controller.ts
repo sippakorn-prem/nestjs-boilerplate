@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 
@@ -7,25 +7,26 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     /**
-     * GET /api/auth/entra/login
+     * GET /api/auth/:strategy/login
      * Returns JSON with login URL and PKCE state/codeVerifier.
-     * For redirect-based flow, redirect user to the returned URL; store state and codeVerifier for callback.
+     * Strategy examples: entra, (future: google, github).
      */
-    @Get('entra/login')
-    async entraLogin(): Promise<{ url: string; state: string; codeVerifier: string }> {
-        return this.authService.getEntraLoginUrl();
+    @Get(':strategy/login')
+    async login(
+        @Param('strategy') strategy: string,
+    ): Promise<{ url: string; state: string; codeVerifier?: string }> {
+        return this.authService.getLoginUrl(strategy);
     }
 
     /**
-     * GET /api/auth/entra/callback?code=...&state=...
-     * Callback for Entra ID. Pass code and state from query; codeVerifier must come from session if you use one.
-     * Returns tokens as JSON. For browser flow you may redirect to frontend with tokens in query/fragment.
+     * GET /api/auth/:strategy/callback?code=...&state=...&code_verifier=...
+     * Callback for OAuth. All query params are passed to the strategy (code, state, code_verifier, and any provider-specific params).
+     * Returns tokens as JSON.
      */
-    @Get('entra/callback')
-    async entraCallback(
-        @Query('code') code: string | undefined,
-        @Query('state') state: string | undefined,
-        @Query('code_verifier') codeVerifier: string | undefined,
+    @Get(':strategy/callback')
+    async callback(
+        @Param('strategy') strategy: string,
+        @Query() query: Record<string, string | undefined>,
         @Res({ passthrough: true }) res: Response,
     ): Promise<{
         accessToken: string;
@@ -33,6 +34,8 @@ export class AuthController {
         expiresOn: string;
         tokenType: string;
     }> {
+        const code = query['code'];
+        const state = query['state'];
         if (!code || !state) {
             res.status(400);
             return {
@@ -41,7 +44,13 @@ export class AuthController {
                 tokenType: 'Bearer',
             };
         }
-        const result = await this.authService.redeemEntraCode(code, state, codeVerifier);
+        const params = {
+            ...query,
+            code,
+            state,
+            codeVerifier: query['code_verifier'] ?? query['codeVerifier'],
+        };
+        const result = await this.authService.redeemCode(strategy, params);
         return {
             accessToken: result.accessToken,
             refreshToken: result.refreshToken,
