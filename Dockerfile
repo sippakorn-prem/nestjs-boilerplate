@@ -9,6 +9,9 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+# Prisma config requires DATABASE_URL at load time; passed from docker-compose build args (.env) or default
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL:-sqlserver://localhost:1433;database=build;user=sa;password=build;encrypt=true;trustServerCertificate=true;}
 RUN npx prisma generate
 RUN npm run build
 
@@ -27,8 +30,7 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./
-RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]

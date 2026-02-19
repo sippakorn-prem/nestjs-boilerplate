@@ -1,0 +1,63 @@
+# ============================================
+# NestJS app + SQL Server for local/dev
+# ============================================
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                # From .env (same as env_file); only for prisma generate at build time
+                DATABASE_URL: ${DATABASE_URL:-sqlserver://localhost:1433;database=build;user=sa;password=build;encrypt=true;trustServerCertificate=true;}
+        container_name: template-nestjs-app
+        ports:
+            - '${PORT:-3000}:3000'
+        environment:
+            NODE_ENV: ${NODE_ENV:-production}
+            PORT: '3000'
+            DATABASE_URL: 'sqlserver://db:1433;database=${DB_NAME:-myapp};user=sa;password=${DB_SA_PASSWORD:-P@ssw0rd};encrypt=true;trustServerCertificate=true;'
+        env_file:
+            - .env
+        command: sh -c 'npx prisma generate && node dist/src/main.js'
+        depends_on:
+            db-init:
+                condition: service_completed_successfully
+        restart: unless-stopped
+
+    db:
+        image: mcr.microsoft.com/azure-sql-edge
+        container_name: template-nestjs-db
+        environment:
+            ACCEPT_EULA: 'Y'
+            MSSQL_SA_PASSWORD: '${DB_SA_PASSWORD:-P@ssw0rd}'
+            TZ: 'Asia/Bangkok'
+            MSSQL_PID: 'Developer'
+        ports:
+            - '1433:1433'
+        volumes:
+            - mssql_data:/var/opt/mssql
+        restart: unless-stopped
+
+    db-init:
+        image: mcr.microsoft.com/mssql-tools
+        container_name: template-nestjs-db-init
+        environment:
+            MSSQL_SA_PASSWORD: '${DB_SA_PASSWORD:-P@ssw0rd}'
+            DB_NAME: '${DB_NAME:-myapp}'
+        entrypoint: ['/bin/bash', '-c']
+        command:
+            - |
+              set -e
+              SQLCMD=$$(command -v sqlcmd 2>/dev/null || (test -x /opt/mssql-tools18/bin/sqlcmd && echo /opt/mssql-tools18/bin/sqlcmd) || echo /opt/mssql-tools/bin/sqlcmd)
+              echo "Waiting for SQL Server to accept connections..."
+              until $$SQLCMD -S db -U sa -P "$$MSSQL_SA_PASSWORD" -d master -C -b -Q "SELECT 1" 2>/dev/null; do
+                sleep 2
+              done
+              echo "Creating database $$DB_NAME if not exists..."
+              $$SQLCMD -S db -U sa -P "$$MSSQL_SA_PASSWORD" -d master -C -b -Q "IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '$$DB_NAME') CREATE DATABASE [$$DB_NAME]"
+              echo "Done."
+        depends_on:
+            - db
+
+volumes:
+    mssql_data:

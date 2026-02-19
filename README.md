@@ -105,11 +105,37 @@ SMTP and FTP are available as global services when configured in `.env`; use `Sm
 
 ## Docker
 
-Build and run with the default Dockerfile:
+### Build image only
 
 ```bash
-docker build -t nestjs-boilerplate .
-docker run -p 3000:3000 --env-file .env nestjs-boilerplate
+make docker-build
+# or
+docker build -t template-nestjs .
 ```
 
-Use a real `.env` or pass env vars; ensure `DATABASE_URL` and any optional integration vars are set.
+### Run with Docker Compose (app + SQL Server)
+
+Compose starts the NestJS app and a SQL Server 2022 container. The app’s `DATABASE_URL` is set to use the `db` service.
+
+```bash
+make docker-up-build    # build images and start
+make docker-up          # start (use existing images)
+make docker-down        # stop and remove containers
+make docker-logs        # follow logs
+```
+
+Ensure `.env` exists (copy from `.env.example`). Optional for compose: `DB_SA_PASSWORD`, `DB_NAME`, `DB_PORT`; defaults are used if unset.
+
+After first start, run migrations inside the app container if needed:
+
+```bash
+docker-compose exec app npx prisma migrate deploy
+```
+
+### Run single container (no compose)
+
+Use a real `DATABASE_URL` (e.g. host machine or external SQL Server):
+
+```bash
+docker run -p 3000:3000 --env-file .env template-nestjs
+```
