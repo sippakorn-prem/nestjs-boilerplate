@@ -27,4 +27,7 @@ export const envValidationSchema = Joi.object({
     ENTRA_CLIENT_SECRET: Joi.string().optional().allow(''),
     ENTRA_TENANT_ID: Joi.string().optional().allow(''),
     ENTRA_REDIRECT_URI: Joi.string().uri().optional().allow(''),
+
+    // Auth demo: redirect after login with token in fragment (optional)
+    CLIENT_REDIRECT_URI: Joi.string().uri().optional().allow(''),
 });
