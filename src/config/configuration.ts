@@ -1,7 +1,14 @@
+import { getEntraIdConfig } from '../integrations/entra-id/entra-id.config';
+import { getFtpConfig } from '../integrations/ftp/ftp.config';
+import { getSmtpConfig } from '../integrations/smtp/smtp.config';
+
 export interface AppConfiguration {
     port: number;
     nodeEnv: string;
     databaseUrl: string;
+    smtp: ReturnType<typeof getSmtpConfig>;
+    ftp: ReturnType<typeof getFtpConfig>;
+    entraId: ReturnType<typeof getEntraIdConfig>;
 }
 
 export default (): AppConfiguration => {
@@ -9,5 +16,8 @@ export default (): AppConfiguration => {
         port: parseInt(process.env.PORT ?? '3000', 10),
         nodeEnv: process.env.NODE_ENV ?? 'development',
         databaseUrl: process.env.DATABASE_URL ?? '',
+        smtp: getSmtpConfig(),
+        ftp: getFtpConfig(),
+        entraId: getEntraIdConfig(),
     };
 };
