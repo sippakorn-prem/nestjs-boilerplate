@@ -3,7 +3,7 @@ import type {
     CreateSampleItemInput,
     SampleItem,
     UpdateSampleItemInput,
-} from './sample.repository';
+} from './sample.interface';
 import { SampleRepository } from './sample.repository';
 
 @Injectable()

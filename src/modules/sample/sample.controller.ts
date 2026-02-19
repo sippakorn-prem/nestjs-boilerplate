@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import type { CreateSampleItemInput, UpdateSampleItemInput } from './sample.repository';
+import type { CreateSampleItemInput, UpdateSampleItemInput } from './sample.interface';
 import { SampleService } from './sample.service';
 
 @Controller('sample')

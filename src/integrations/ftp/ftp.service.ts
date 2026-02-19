@@ -1,15 +1,7 @@
 import { Injectable, type OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as ftp from 'basic-ftp';
-import type { FtpConfiguration } from './ftp.config';
-
-export interface FtpConnectionOptions {
-    host: string;
-    port: number;
-    user: string;
-    password: string;
-    secure?: boolean;
-}
+import type { FtpConfiguration, FtpConnectionOptions } from './ftp.interface';
 
 @Injectable()
 export class FtpService implements OnModuleDestroy {

@@ -1,11 +1,4 @@
-export interface SmtpConfiguration {
-    host: string;
-    port: number;
-    secure: boolean;
-    user: string;
-    password: string;
-    from: string;
-}
+import type { SmtpConfiguration } from './smtp.interface';
 
 export function getSmtpConfig(): SmtpConfiguration {
     return {

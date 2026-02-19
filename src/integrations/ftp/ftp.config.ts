@@ -1,10 +1,4 @@
-export interface FtpConfiguration {
-    host: string;
-    port: number;
-    user: string;
-    password: string;
-    secure: boolean;
-}
+import type { FtpConfiguration } from './ftp.interface';
 
 export function getFtpConfig(): FtpConfiguration {
     return {

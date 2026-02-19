@@ -1,9 +1,4 @@
-export interface EntraIdConfiguration {
-    clientId: string;
-    clientSecret: string;
-    tenantId: string;
-    redirectUri: string;
-}
+import type { EntraIdConfiguration } from './entra-id.interface';
 
 export function getEntraIdConfig(): EntraIdConfiguration {
     return {

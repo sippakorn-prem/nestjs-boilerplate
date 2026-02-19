@@ -2,18 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Transporter } from 'nodemailer';
 import * as nodemailer from 'nodemailer';
-import type { SmtpConfiguration } from './smtp.config';
-
-export interface SendMailOptions {
-    to: string | string[];
-    subject: string;
-    text?: string;
-    html?: string;
-    from?: string;
-    replyTo?: string;
-    cc?: string | string[];
-    bcc?: string | string[];
-}
+import type { SendMailOptions, SmtpConfiguration } from './smtp.interface';
 
 @Injectable()
 export class SmtpService {

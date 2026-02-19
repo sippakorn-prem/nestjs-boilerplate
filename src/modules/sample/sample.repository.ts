@@ -1,24 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import type { SampleItem as PrismaSampleItem } from '@prisma/client';
-
-export interface SampleItem {
-    id: string;
-    name: string;
-    value: number | null;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export interface CreateSampleItemInput {
-    name: string;
-    value?: number;
-}
-
-export interface UpdateSampleItemInput {
-    name?: string;
-    value?: number;
-}
+import type { CreateSampleItemInput, SampleItem, UpdateSampleItemInput } from './sample.interface';
 
 @Injectable()
 export class SampleRepository {

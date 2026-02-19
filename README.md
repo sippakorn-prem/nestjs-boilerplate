@@ -2,65 +2,64 @@
 
 NestJS API with Prisma (SQL Server), configurable SMTP/FTP integrations, and Microsoft Entra ID login.
 
-## Project folder structure
+## Project structure
 
 ```
 src/
 ├── main.ts
 ├── app.module.ts
-│
 ├── config/
-│   ├── configuration.ts      # App config (port, env, DB, SMTP, FTP, Entra ID)
-│   └── env.validation.ts     # Joi schema for env validation
-│
 ├── common/
-│   ├── constants/
-│   ├── decorators/
-│   ├── filters/
-│   ├── guards/
-│   ├── interceptors/
-│   ├── middleware/
-│   ├── pipes/
-│   └── utils/
-│
 ├── database/
-│   ├── database.module.ts
-│   ├── prisma.service.ts
-│   └── index.ts
-│
-├── integrations/             # External services (optional, config from .env)
-│   ├── smtp/
-│   │   ├── smtp.module.ts
-│   │   ├── smtp.service.ts
-│   │   └── index.ts
-│   ├── ftp/
-│   │   ├── ftp.module.ts
-│   │   ├── ftp.service.ts
-│   │   └── index.ts
-│   ├── entra-id/              # Microsoft Entra ID (login URL + token exchange)
-│   │   ├── entra-id.module.ts
-│   │   ├── entra-id.service.ts
-│   │   └── index.ts
-│   └── index.ts
-│
+├── integrations/
 ├── modules/
-│   ├── auth/                  # Auth (Entra ID login writer)
-│   │   ├── auth.module.ts
-│   │   ├── auth.service.ts
-│   │   ├── auth.controller.ts
-│   │   └── index.ts
-│   └── sample/                # Sample feature (module + service + repository)
-│       ├── sample.module.ts
-│       ├── sample.service.ts
-│       ├── sample.controller.ts
-│       ├── sample.repository.ts
-│       └── index.ts
-│
 prisma/
-├── schema.prisma
-├── migrations/
-└── (prisma.config.ts at project root)
 ```
+
+### What each folder is for
+
+| Folder | Purpose |
+|--------|---------|
+| **`src/config/`** | App-wide configuration and env validation. |
+| **`src/common/`** | Shared utilities, decorators, filters, guards, interceptors, middleware, pipes. |
+| **`src/database/`** | Database connection and ORM (e.g. Prisma). |
+| **`src/integrations/`** | **External** modules: third-party or external services (SMTP, FTP, Entra ID, etc.). Config from `.env`, optional at runtime. |
+| **`src/modules/`** | **Internal** modules: your app’s features (auth, health, sample, etc.). Use integrations and database as needed. |
+| **`prisma/`** | Schema, migrations, and Prisma config. |
+
+---
+
+## If I want to create a module, what should I have?
+
+### 1. Decide where it lives
+
+- **External service (API, SMTP, OAuth, etc.)** → `src/integrations/<name>/`
+- **App feature (auth, users, orders, etc.)** → `src/modules/<name>/`
+
+### 2. Files to add (by convention)
+
+Create a folder `src/integrations/<name>/` or `src/modules/<name>/` and add:
+
+| File | When to use |
+|------|-------------|
+| **`<name>.module.ts`** | Always. Declares the NestJS module and exports. |
+| **`<name>.service.ts`** | Always. Business or integration logic. |
+| **`<name>.controller.ts`** | When the module exposes HTTP routes (internal modules). |
+| **`<name>.repository.ts`** | When the module needs data access (internal modules). |
+| **`<name>.interface.ts`** | When the module has types or interfaces. |
+| **`<name>.enum.ts`** | When the module has enums. |
+| **`<name>.constant.ts`** | When the module has constants. |
+| **`<name>.config.ts`** | When the module reads its own config from env (often in integrations). |
+| **`index.ts`** | Re-export the module and public types/services. |
+
+### 3. Register the module
+
+Import the new module in `src/app.module.ts` and add it to the `imports` array.
+
+### 4. Optional: env and config
+
+- For **integrations**: add env vars to `.env.example` and, if the module owns its config, a `<name>.config.ts` that reads them (and optionally register in `src/config/configuration.ts`).
+- For **internal modules**: use existing config or inject `ConfigService` as needed.
 
 ## Setup
 

@@ -8,6 +8,7 @@ import { EntraIdModule } from './integrations/entra-id';
 import { FtpModule } from './integrations/ftp';
 import { SmtpModule } from './integrations/smtp';
 import { AuthModule } from './modules/auth/auth.module';
+import { HealthModule } from './modules/health/health.module';
 import { SampleModule } from './modules/sample/sample.module';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
@@ -25,6 +26,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
         FtpModule,
         EntraIdModule,
         AuthModule,
+        HealthModule,
         SampleModule,
     ],
     controllers: [],

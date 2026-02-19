@@ -1,3 +1,4 @@
 export { FtpModule } from './ftp.module';
-export { getFtpConfig, type FtpConfiguration } from './ftp.config';
-export { FtpService, type FtpConnectionOptions } from './ftp.service';
+export { getFtpConfig } from './ftp.config';
+export type { FtpConfiguration, FtpConnectionOptions } from './ftp.interface';
+export { FtpService } from './ftp.service';

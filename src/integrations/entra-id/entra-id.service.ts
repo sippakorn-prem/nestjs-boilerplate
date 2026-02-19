@@ -1,20 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
-import type { EntraIdConfiguration } from './entra-id.config';
-
-export interface EntraLoginUrlResult {
-    url: string;
-    state: string;
-    codeVerifier: string;
-}
-
-export interface EntraTokenResult {
-    accessToken: string;
-    refreshToken?: string;
-    expiresOn: Date;
-    scopes: string[];
-}
+import type { EntraIdConfiguration, EntraLoginUrlResult, EntraTokenResult } from './entra-id.interface';
 
 @Injectable()
 export class EntraIdService {
