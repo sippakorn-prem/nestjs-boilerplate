@@ -1,1 +1,1 @@
-export {};
+export { AuthGuard } from './auth.guard';

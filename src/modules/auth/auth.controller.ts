@@ -3,8 +3,10 @@ import { join } from 'node:path';
 import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
+import { Public } from '../../common/decorators';
 import { AuthService } from './auth.service';
 
+@Public()
 @Controller('auth')
 export class AuthController {
     constructor(

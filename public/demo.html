@@ -85,7 +85,8 @@
             try {
                 const res = await fetch('/api/auth/entra/login');
                 if (!res.ok) throw new Error(res.statusText);
-                const data = await res.json();
+                const body = await res.json();
+                const data = body.data ?? body;
                 window.location.href = data.url;
             } catch (e) {
                 btn.disabled = false;

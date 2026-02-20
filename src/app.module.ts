@@ -1,6 +1,9 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 
+import { AuthGuard } from './common/guards';
+import { RequestIdMiddleware } from './common/middleware';
 import configuration from './config/configuration';
 import { envValidationSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
@@ -30,6 +33,12 @@ const nodeEnv = process.env.NODE_ENV || 'development';
         SampleModule,
     ],
     controllers: [],
-    providers: [],
+    providers: [
+        { provide: APP_GUARD, useClass: AuthGuard },
+    ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer): void {
+        consumer.apply(RequestIdMiddleware).forRoutes('*');
+    }
+}
