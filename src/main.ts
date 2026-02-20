@@ -8,7 +8,7 @@ import { ResponseTransformInterceptor } from './common/interceptors';
 async function bootstrap() {
     const logger = new Logger('Main');
     const app = await NestFactory.create(AppModule);
-    app.setGlobalPrefix('api');
+    app.setGlobalPrefix('api', { exclude: ['onelogin/callback'] });
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalInterceptors(new ResponseTransformInterceptor());
     const config = app.get(ConfigService);

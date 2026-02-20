@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Controller, Get, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Query, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { Public } from '../../common/decorators';
+import { OneLoginService } from '../../integrations/one-login';
 import { AuthService } from './auth.service';
 
 @Public()
@@ -12,6 +13,7 @@ export class AuthController {
     constructor(
         private readonly authService: AuthService,
         private readonly configService: ConfigService,
+        private readonly oneLoginService: OneLoginService,
     ) {}
 
     /**
@@ -26,9 +28,26 @@ export class AuthController {
     }
 
     /**
+     * GET /api/auth/:strategy/logout
+     * For onelogin: redirects to IdP logout (optional ?id_token_hint= for RP-initiated logout).
+     */
+    @Get(':strategy/logout')
+    logout(
+        @Param('strategy') strategy: string,
+        @Query('id_token_hint') idTokenHint: string | undefined,
+        @Res() res: Response,
+    ): void {
+        if (strategy !== 'onelogin' || !this.oneLoginService.isAvailable()) {
+            throw new NotFoundException(`Logout not supported for strategy: ${strategy}`);
+        }
+        const url = this.oneLoginService.getLogoutUrl(idTokenHint);
+        res.redirect(302, url);
+    }
+
+    /**
      * GET /api/auth/:strategy/login
      * Returns JSON with login URL and PKCE state/codeVerifier.
-     * Strategy examples: entra, (future: google, github).
+     * Strategy examples: entra, onelogin.
      */
     @Get(':strategy/login')
     async login(

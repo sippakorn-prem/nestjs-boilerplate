@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
+import { inspect } from 'node:util';
 import type { EntraIdConfiguration, EntraLoginUrlResult, EntraTokenResult } from './entra-id.interface';
 
 @Injectable()
 export class EntraIdService {
+    private readonly logger = new Logger(EntraIdService.name);
     private config: EntraIdConfiguration;
     private app: ConfidentialClientApplication | null = null;
     private pkceVerifiers = new Map<string, string>();
@@ -98,6 +100,9 @@ export class EntraIdService {
         }
 
         const authResult = result as AuthenticationResult & { refreshToken?: string };
+        this.logger.log(
+            `Entra ID OAuth token response ${inspect(authResult, { colors: true, compact: false })}`,
+        );
         return {
             accessToken: authResult.accessToken ?? '',
             refreshToken: authResult.refreshToken,

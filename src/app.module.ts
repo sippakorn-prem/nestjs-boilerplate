@@ -9,6 +9,7 @@ import { envValidationSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { EntraIdModule } from './integrations/entra-id';
 import { FtpModule } from './integrations/ftp';
+import { OneLoginModule } from './integrations/one-login';
 import { SmtpModule } from './integrations/smtp';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
@@ -28,6 +29,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
         SmtpModule,
         FtpModule,
         EntraIdModule,
+        OneLoginModule,
         AuthModule,
         HealthModule,
         SampleModule,

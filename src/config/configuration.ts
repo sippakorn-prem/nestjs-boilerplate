@@ -1,5 +1,6 @@
 import { getEntraIdConfig } from '../integrations/entra-id/entra-id.config';
 import { getFtpConfig } from '../integrations/ftp/ftp.config';
+import { getOneLoginConfig } from '../integrations/one-login/one-login.config';
 import { getSmtpConfig } from '../integrations/smtp/smtp.config';
 
 export interface AppConfiguration {
@@ -11,6 +12,7 @@ export interface AppConfiguration {
     smtp: ReturnType<typeof getSmtpConfig>;
     ftp: ReturnType<typeof getFtpConfig>;
     entraId: ReturnType<typeof getEntraIdConfig>;
+    oneLogin: ReturnType<typeof getOneLoginConfig>;
 }
 
 export default (): AppConfiguration => {
@@ -22,5 +24,6 @@ export default (): AppConfiguration => {
         smtp: getSmtpConfig(),
         ftp: getFtpConfig(),
         entraId: getEntraIdConfig(),
+        oneLogin: getOneLoginConfig(),
     };
 };
