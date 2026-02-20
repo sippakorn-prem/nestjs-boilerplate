@@ -15,6 +15,10 @@ export interface AuthTokenResult {
     refreshToken?: string;
     expiresOn: Date;
     tokenType: string;
+    /** Raw id_token from the IdP (JWT string). */
+    idToken?: string;
+    /** Decoded id_token payload (claims). */
+    idTokenClaims?: Record<string, unknown>;
 }
 
 /**

@@ -23,4 +23,8 @@ export interface OneLoginTokenResult {
     refreshToken?: string;
     expiresOn: Date;
     tokenType: string;
+    /** Raw id_token (JWT). */
+    idToken?: string;
+    /** Decoded id_token claims. */
+    idTokenClaims?: Record<string, unknown>;
 }

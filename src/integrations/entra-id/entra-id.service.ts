@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
 import { inspect } from 'node:util';
+import { decodeJwtPayload } from '../../common/utils';
 import type { EntraIdConfiguration, EntraLoginUrlResult, EntraTokenResult } from './entra-id.interface';
 
 @Injectable()
@@ -99,15 +100,32 @@ export class EntraIdService {
             this.pkceVerifiers.delete(state);
         }
 
-        const authResult = result as AuthenticationResult & { refreshToken?: string };
+        const authResult = result as AuthenticationResult & {
+            refreshToken?: string;
+            idToken?: string;
+            idTokenClaims?: Record<string, unknown>;
+        };
         this.logger.log(
             `Entra ID OAuth token response ${inspect(authResult, { colors: true, compact: false })}`,
         );
+        const idToken = authResult.idToken ?? (authResult as { account?: { idToken?: string } }).account?.idToken;
+        const idTokenClaimsFromPayload = idToken ? decodeJwtPayload(idToken) : null;
+        if (idTokenClaimsFromPayload) {
+            this.logger.log(
+                `Entra ID id_token (decodeJwtPayload) ${inspect(idTokenClaimsFromPayload, { colors: true, compact: false })}`,
+            );
+        }
+        const idTokenClaims =
+            idTokenClaimsFromPayload ??
+            authResult.idTokenClaims ??
+            (authResult as { account?: { idTokenClaims?: Record<string, unknown> } }).account?.idTokenClaims;
         return {
             accessToken: authResult.accessToken ?? '',
             refreshToken: authResult.refreshToken,
             expiresOn: authResult.expiresOn ?? new Date(),
             scopes: authResult.scopes ?? [],
+            idToken,
+            idTokenClaims,
         };
     }
 }

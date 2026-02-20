@@ -31,6 +31,8 @@ export class EntraIdAuthStrategy implements AuthStrategy {
             refreshToken: result.refreshToken,
             expiresOn: result.expiresOn,
             tokenType: 'Bearer',
+            idToken: result.idToken,
+            idTokenClaims: result.idTokenClaims,
         };
     }
 }

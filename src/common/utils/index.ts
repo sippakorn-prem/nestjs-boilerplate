@@ -1,1 +1,1 @@
-export {};
+export { decodeJwtPayload } from './jwt.util';

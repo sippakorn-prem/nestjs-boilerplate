@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { inspect } from 'node:util';
+import { decodeJwtPayload } from '../../common/utils';
 import type {
     OneLoginConfiguration,
     OneLoginLoginUrlResult,
@@ -102,6 +103,7 @@ export class OneLoginService {
             refresh_token?: string;
             expires_in?: number;
             token_type?: string;
+            id_token?: string;
         };
 
         this.logger.log(
@@ -114,11 +116,21 @@ export class OneLoginService {
             ? new Date(Date.now() + data.expires_in * 1000)
             : new Date();
 
+        const idToken = data.id_token;
+        const idTokenClaims = idToken ? decodeJwtPayload(idToken) ?? undefined : undefined;
+        if (idTokenClaims) {
+            this.logger.log(
+                `OneLogin id_token (decodeJwtPayload) ${inspect(idTokenClaims, { colors: true, compact: false })}`,
+            );
+        }
+
         return {
             accessToken: data.access_token ?? '',
             refreshToken: data.refresh_token,
             expiresOn,
             tokenType: data.token_type ?? 'Bearer',
+            idToken,
+            idTokenClaims,
         };
     }
 

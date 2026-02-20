@@ -31,6 +31,8 @@ export class OneLoginAuthStrategy implements AuthStrategy {
             refreshToken: result.refreshToken,
             expiresOn: result.expiresOn,
             tokenType: result.tokenType,
+            idToken: result.idToken,
+            idTokenClaims: result.idTokenClaims,
         };
     }
 }
