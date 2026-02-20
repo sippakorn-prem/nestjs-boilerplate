@@ -67,7 +67,14 @@ export class AuthController {
         @Query() query: Record<string, string | undefined>,
         @Res({ passthrough: true }) res: Response,
     ): Promise<
-        | { accessToken: string; refreshToken?: string; expiresOn: string; tokenType: string }
+        | {
+              accessToken: string;
+              refreshToken?: string;
+              expiresOn: string;
+              tokenType: string;
+              idToken?: string;
+              idTokenClaims?: Record<string, unknown>;
+          }
         | undefined
     > {
         const code = query['code'];
@@ -90,12 +97,17 @@ export class AuthController {
 
         const redirectUri = this.configService.get<string>('clientRedirectUri');
         if (redirectUri) {
-            const fragment = new URLSearchParams({
+            const fragmentParams: Record<string, string> = {
                 access_token: result.accessToken,
                 expires_on: result.expiresOn.toISOString(),
                 token_type: result.tokenType,
                 ...(result.refreshToken && { refresh_token: result.refreshToken }),
-            }).toString();
+                ...(result.idToken && { id_token: result.idToken }),
+                ...(result.idTokenClaims && {
+                    id_token_claims: JSON.stringify(result.idTokenClaims),
+                }),
+            };
+            const fragment = new URLSearchParams(fragmentParams).toString();
             res.redirect(302, `${redirectUri}#${fragment}`);
             return;
         }
@@ -105,6 +117,8 @@ export class AuthController {
             refreshToken: result.refreshToken,
             expiresOn: result.expiresOn.toISOString(),
             tokenType: result.tokenType,
+            idToken: result.idToken,
+            idTokenClaims: result.idTokenClaims,
         };
     }
 }

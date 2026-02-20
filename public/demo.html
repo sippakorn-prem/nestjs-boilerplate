@@ -73,12 +73,24 @@
             document.getElementById('logged-in').style.display = 'block';
             const accessToken = params.access_token || '';
             const mask = (s) => s.length > 12 ? s.slice(0, 8) + '…' + s.slice(-4) : '…';
-            document.getElementById('result').innerHTML =
+            let html =
                 '<h2>Token info (masked)</h2><pre>' +
                 'access_token: ' + mask(accessToken) + '\n' +
                 'expires_on: ' + (params.expires_on || '') + '\n' +
                 'token_type: ' + (params.token_type || '') + '\n' +
-                (params.refresh_token ? 'refresh_token: ' + mask(params.refresh_token) + '\n' : '');
+                (params.refresh_token ? 'refresh_token: ' + mask(params.refresh_token) + '\n' : '') +
+                (params.id_token ? 'id_token: ' + mask(params.id_token) + '\n' : '');
+            html += '</pre>';
+            if (params.id_token_claims) {
+                try {
+                    const claims = JSON.parse(params.id_token_claims);
+                    html += '<h2>Parsed id_token claims</h2><pre>' +
+                        JSON.stringify(claims, null, 2) + '</pre>';
+                } catch (e) {
+                    html += '<h2>Parsed id_token claims</h2><p class="mask">(invalid JSON)</p>';
+                }
+            }
+            document.getElementById('result').innerHTML = html;
         }
 
         function clearHash() {
